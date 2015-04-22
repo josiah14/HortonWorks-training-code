@@ -1,0 +1,5 @@
+project.ext.mainclass = 'compress.CompressDemoJob'
+project.ext.archiveName = 'compression.jar'
+
+apply from: '/root/java/labs/build.gradle'
+

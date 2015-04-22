@@ -1,0 +1,65 @@
+project.ext.archiveName = 'spark-app.jar'
+
+buildscript {
+  repositories { jcenter() }
+  dependencies {
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.0.2'
+  }
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'scala'
+
+group = 'com.hortonworks'
+version = 'Rev3'
+
+description = """Spark Job"""
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+    compile 'org.apache.spark:spark-core_2.10:1.0.1'
+    compile 'org.apache.hadoop:hadoop-client:2.4.1'
+
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.hamcrest:hamcrest-all:1.3'
+}
+
+if (project.ext.properties.containsKey("archiveName")) {
+  shadowJar {
+    archiveName = "${project.ext.archiveName}"
+    destinationDir = new File("${project.projectDir}")
+  }
+}
+
+task deleteJar(type: Delete) {
+  if (project.ext.properties.containsKey("archiveName")) {
+    delete "${project.ext.archiveName}"
+  }
+}
+
+clean.dependsOn(deleteJar)
+
+shadowJar {
+  mergeServiceFiles()
+  dependencies {
+    exclude(dependency('org.apache.spark:spark-core_2.10:1.0.1'))
+  }
+}
+
+jar {
+  actions = []
+}
+jar.dependsOn(shadowJar)
+
+tasks.withType(ScalaCompile) {
+  scalaCompileOptions.useAnt = false
+}

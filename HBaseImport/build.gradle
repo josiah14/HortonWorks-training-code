@@ -1,0 +1,5 @@
+project.ext.mainclass = 'hbase.StockImporter'
+project.ext.archiveName = 'hbaseimport.jar'
+
+apply from: '/root/java/labs/build.gradle'
+

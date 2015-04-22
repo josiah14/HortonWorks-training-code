@@ -1,0 +1,13 @@
+CREATE TABLE stocks (xchange STRING,
+  symbol STRING, 
+   priceDate STRING,
+   open FLOAT,
+   high FLOAT,
+   low FLOAT,
+   close FLOAT,
+   volume INT,
+   adjClose FLOAT) 
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA LOCAL INPATH '/root/java/labs/data/stock_prices/NYSE_daily_prices_A.csv' OVERWRITE INTO TABLE stocks;

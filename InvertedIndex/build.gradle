@@ -1,0 +1,5 @@
+project.ext.mainclass = 'inverted.IndexInverterJob'
+project.ext.archiveName = 'invertedindex.jar'
+
+apply from: '/root/java/labs/build.gradle'
+

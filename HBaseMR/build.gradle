@@ -1,0 +1,5 @@
+project.ext.mainclass = 'hbasemr.MaxClosingPriceJob'
+project.ext.archiveName = 'hbasemr.jar'
+
+apply from: '/root/java/labs/build.gradle'
+

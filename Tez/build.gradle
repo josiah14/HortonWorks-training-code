@@ -1,0 +1,8 @@
+project.ext.archiveName = 'tez-app.jar'
+
+apply from: '/root/java/labs/build.gradle'
+
+dependencies {
+  compile 'org.apache.tez:tez-api:0.4.0-incubating'
+  compile 'org.apache.tez:tez-mapreduce:0.4.0-incubating'
+}

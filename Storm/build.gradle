@@ -1,0 +1,94 @@
+project.ext.archiveName = 'storm-app.jar'
+project.ext.stormversion = '0.9.1.2.1.3.0-563'
+
+buildscript {
+  repositories { 
+    jcenter() 
+    maven {
+      url="http://repo.hortonworks.com/content/repositories/releases/"
+    }
+  }
+  dependencies {
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.0.2'
+  }
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+group = 'com.hortonworks'
+version = 'Rev3'
+
+description = """Storm Job"""
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+sourceSets {
+  multilang {
+    resources {
+      srcDir 'src/multilang/resources'
+      output.resourcesDir = "$buildDir/resources/multilang/resources"
+    }
+  }
+  
+  main {
+    compileClasspath += multilang.output
+    runtimeClasspath += multilang.output
+  }
+}
+
+repositories {
+  jcenter()
+  maven {
+    url="http://repo.hortonworks.com/content/repositories/releases/"
+  }
+  maven {
+    url="http://conjars.org/repo"
+  }
+  maven {
+    url="http://clojars.org/repo"
+  }
+}
+
+dependencies {
+    compile "org.apache.storm:storm-core:${project.ext.stormversion}"
+    compile "org.apache.storm:storm-hdfs:${project.ext.stormversion}"
+    compile "org.apache.storm:storm-hbase:${project.ext.stormversion}"
+    compile "org.apache.storm:storm-kafka:${project.ext.stormversion}"
+    compile "org.apache.kafka:kafka_2.10:0.8.1.1"
+
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.hamcrest:hamcrest-all:1.3'
+}
+
+if (project.ext.properties.containsKey("archiveName")) {
+  shadowJar {
+    archiveName = "${project.ext.archiveName}"
+    destinationDir = new File("${project.projectDir}")
+  }
+}
+
+task deleteJar(type: Delete) {
+  if (project.ext.properties.containsKey("archiveName")) {
+    delete "${project.ext.archiveName}"
+  }
+}
+
+clean.dependsOn(deleteJar)
+
+shadowJar {
+  from sourceSets.multilang.output.resourcesDir.parent
+  mergeServiceFiles()
+  dependencies {
+    exclude(dependency("org.apache.storm:storm-core:${project.ext.stormversion}"))
+    exclude(dependency("org.slf4j:slf4j-log4j12:1.6.1"))
+  }
+}
+
+jar {
+  actions = []
+}
+jar.dependsOn(shadowJar)

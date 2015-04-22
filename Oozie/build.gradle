@@ -1,0 +1,5 @@
+project.ext.mainclass = 'bloom.StockDividendFilter'
+project.ext.archiveName = 'oozie.jar'
+
+apply from: '/root/java/labs/build.gradle'
+

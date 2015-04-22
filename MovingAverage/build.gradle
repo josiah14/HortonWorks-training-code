@@ -1,0 +1,5 @@
+project.ext.mainclass = 'average.MovingAveragePreprocessor'
+project.ext.archiveName = 'movingaverage.jar'
+
+apply from: '/root/java/labs/build.gradle'
+

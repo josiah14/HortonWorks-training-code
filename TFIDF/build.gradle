@@ -1,0 +1,14 @@
+project.ext.mainclass = 'tfidf.TfIdfDriver'
+project.ext.archiveName = 'tfidf.jar'
+
+apply from: '/root/java/labs/build.gradle'
+
+task copyAvroToLib(type: Copy) {
+    into "$buildDir/output/fatjar/lib"
+    from configurations.avro
+}
+jar.dependsOn(copyAvroToLib)
+jar {
+  from "$buildDir/output/fatjar"
+}
+

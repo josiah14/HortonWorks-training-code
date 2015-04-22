@@ -1,0 +1,5 @@
+project.ext.mainclass = 'mapjoin.MapSideJoin'
+project.ext.archiveName = 'mapsidejoin.jar'
+
+apply from: '/root/java/labs/build.gradle'
+

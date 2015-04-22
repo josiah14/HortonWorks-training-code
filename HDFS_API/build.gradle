@@ -1,0 +1,5 @@
+project.ext.mainclass = 'hdfs.InputCounties'
+project.ext.archiveName = 'inputcounties.jar'
+
+apply from: '/root/java/labs/build.gradle'
+

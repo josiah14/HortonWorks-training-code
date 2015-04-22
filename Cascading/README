@@ -1,0 +1,22 @@
+To run Cascading jobs:
+
+gradle build
+hadoop jar cascade.jar <classname> <additional opts>
+
+If you run hadoop jar without the <additional opts>, the available/required options will be shown.
+
+To run the StockAnalyzer, load the data by running load-data.sh. Then, set "-stocks cstocks -dividends cdividends" command line options.
+
+By default, Cascading jobs run on the cluster using MapReduce.
+
+To run a Cascading job with Tez, run install-tez.sh first to configure Tez 0.5.0 (not part of HDP 2.1, but required by Cascading), then source tez-env.sh to point the local classpath to Tez 0.5.0 locally. Use the -tez CLI option to execute the Cascading job with Tez.
+
+To run any job locally, use the -local CLI option.
+
+
+To run Scalding jobs:
+
+gradle build
+./run-scalding.sh <job class> --local | --hdfs [ --tez] --input <input path> --output <output path>
+
+The --tez option is only valid with --hdfs (cluster execution).

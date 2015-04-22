@@ -1,0 +1,4 @@
+project.ext.archiveName = 'stockudfs.jar'
+
+apply from: '/root/java/labs/build.gradle'
+

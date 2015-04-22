@@ -1,0 +1,146 @@
+<workflow-app xmlns="uri:oozie:workflow:0.2" name="dividendstockfilter-workflow">
+	<start to="build-bloomfilter" />
+	<action name="build-bloomfilter">
+		<map-reduce>
+			<job-tracker>${resourceManager}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${nameNode}/user/${wf:user()}/bloom/temp" />
+			</prepare>
+			<configuration>
+				<property>
+					<name>mapreduce.job.queuename</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value></value>
+				</property>
+				<property>
+					<name>mapreduce.job.reduce.class</name>
+					<value></value>
+				</property>
+				<property>
+					<name>mapreduce.job.inputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.NullOutputFormat
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.map.output.key.class</name>
+					<value>org.apache.hadoop.io.IntWritable</value>
+				</property>
+				<property>
+					<name>mapreduce.map.output.value.class</name>
+					<value>org.apache.hadoop.util.bloom.BloomFilter</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>org.apache.hadoop.io.NullWritable</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.NullWritable</value>
+				</property>
+				<property>
+					<name>mapreduce.job.reduces</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value></value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>${nameNode}/user/${wf:user()}/bloom/temp</value>
+				</property>
+			</configuration>
+		</map-reduce>
+
+
+	</action>
+	<action name="filter-stocks">
+		<map-reduce>
+			<job-tracker>${resourceManager}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${nameNode}/user/${wf:user()}/bloom/bloomoutput" />
+			</prepare>
+			<configuration>
+				<property>
+					<name>mapreduce.job.queuename</name>
+					<value>${queueName}</value>
+				</property>
+				<property>
+					<name>mapred.mapper.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapred.reducer.new-api</name>
+					<value>true</value>
+				</property>
+				<property>
+					<name>mapreduce.job.map.class</name>
+					<value>bloom.StockDividendFilter$StockFilterMapper</value>
+				</property>
+				<property>
+					<name>mapreduce.job.reduce.class</name>
+					<value>bloom.StockDividendFilter$StockFilterReducer</value>
+				</property>
+				<property>
+					<name>mapreduce.job.inputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.input.TextInputFormat
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.job.outputformat.class</name>
+					<value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
+					</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.key.class</name>
+					<value>bloom.Stock</value>
+				</property>
+				<property>
+					<name>mapreduce.job.output.value.class</name>
+					<value>org.apache.hadoop.io.DoubleWritable</value>
+				</property>
+				<property>
+					<name>mapreduce.job.reduces</name>
+					<value>1</value>
+				</property>
+				<property>
+					<name>mapreduce.output.fileoutputformat.outputdir</name>
+					<value>${nameNode}/user/${wf:user()}/bloom/bloomoutput</value>
+				</property>
+				<property>
+					<name>mapreduce.input.fileinputformat.inputdir</name>
+					<value>${nameNode}/user/${wf:user()}/bloom/stocks</value>
+				</property>
+				<property>
+					<name>stockSymbol</name>
+					<value>${stockSymbol}</value>
+				</property>
+			</configuration>
+		</map-reduce>
+		<ok to="end" />
+		<error to="fail" />
+	</action>
+	<kill name="fail">
+		<message>Job failed, error
+			message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+	</kill>
+	<end name="end" />
+</workflow-app>

@@ -1,0 +1,5 @@
+project.ext.mainclass = 'average.AverageJob'
+project.ext.archiveName = 'average.jar'
+
+apply from: '/root/java/labs/build.gradle'
+
