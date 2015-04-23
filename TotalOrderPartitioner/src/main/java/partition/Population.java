@@ -1,6 +1,7 @@
 package partition;
 
 import java.io.IOException;
+import java.net.URI;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -14,6 +15,8 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.partition.InputSampler;
+import org.apache.hadoop.mapreduce.lib.partition.TotalOrderPartitioner;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -64,18 +67,22 @@ public class Population extends Configured implements Tool {
 
 		job.setMapperClass(PopulationMapper.class);
 		job.setReducerClass(PopulationReducer.class);
+
 		job.setInputFormatClass(KeyValueTextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 
 		job.setNumReduceTasks(5);
+		
+		// Partition logic
+		InputSampler.Sampler<Text, Text> sampler = new InputSampler.RandomSampler<Text, Text>(0.1, 200, 3);
+		InputSampler.writePartitionFile(job, sampler);
+		System.out.println(TotalOrderPartitioner.getPartitionFile(conf));
+		job.addCacheFile(new URI(TotalOrderPartitioner.getPartitionFile(conf) + "#" + TotalOrderPartitioner.DEFAULT_PATH));
+		job.setPartitionerClass(TotalOrderPartitioner.class);
 
-		//Configure the TotalOrderPartitioner here...
-
-
-
-		return job.waitForCompletion(true)?0:1;
+		return job.waitForCompletion(true) ? 0 : 1;
 
 	}
 
