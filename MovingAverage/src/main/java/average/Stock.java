@@ -40,11 +40,7 @@ public class Stock implements WritableComparable<Stock> {
 
 	@Override
 	public int compareTo(Stock arg0) {
-		int response = symbol.compareTo(arg0.symbol);
-		if(response == 0) {
-			response = date.compareTo(arg0.date);
-		}
-		return response;
+		return symbol.compareTo(arg0.symbol) == 0 ? date.compareTo(arg0.date) : 0;
 	}
 
 	public String toString() {
