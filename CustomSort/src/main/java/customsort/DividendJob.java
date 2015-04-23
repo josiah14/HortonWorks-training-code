@@ -49,7 +49,7 @@ public class DividendJob extends Configured implements Tool {
 
 		@Override
 		public int getPartition(Stock key, DoubleWritable value, int numReduceTasks) {
-			return 0;
+			return (key.getSymbol().trim().charAt(0) - 'A') % numReduceTasks;
 		}		
 	}
 
@@ -89,6 +89,9 @@ public class DividendJob extends Configured implements Tool {
 		
 		job.setMapperClass(DividendGrowthMapper.class);
 		job.setReducerClass(DividendGrowthReducer.class);
+		job.setPartitionerClass(StockPartitioner.class);
+		job.setGroupingComparatorClass(StockGroupComparator.class);
+
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		job.setOutputKeyClass(NullWritable.class);
