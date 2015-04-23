@@ -20,31 +20,31 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 public class AverageJob extends Configured implements Tool {
-	
-	public static class AveragePartitioner extends Partitioner<Text, Text> {
-
-		@Override
-		public int getPartition(Text key, Text value, int numPartitions) {
-			return key.toString().trim().charAt(0) % numPartitions;
-		}
-	}
-
 	public enum Counters {MAP, COMBINE, REDUCE} 
 	private static final int ONE = 1;
 	private static final String COMMA = ",";
 
+	
+	public static class AveragePartitioner extends Partitioner<Text, Text> {
+
+		@Override
+		public int getPartition(Text state, Text partialSum, int numPartitions) {
+			return state.toString().trim().charAt(0) % numPartitions;
+		}
+	}
+
 	public static class AverageMapper extends Mapper<LongWritable, Text, Text, Text> {
-		private Text outputKey = new Text();
-		private Text outputValue = new Text();
+		private Text state = new Text();
+		private Text medianIncomeY2k = new Text();
         private static final String COMMA_ONE = ",1";
 		
 		@Override
-		protected void map(LongWritable key, Text value, Context context)
+		protected void map(LongWritable key, Text line, Context context)
 				throws IOException, InterruptedException {
-			String [] values = value.toString().split(COMMA);
-			outputKey.set(values[1].trim());
-			outputValue.set(values[9].trim() + COMMA_ONE);
-			context.write(outputKey, outputValue);
+			String [] pairs = line.toString().split(COMMA);
+			state.set(pairs[1].trim());
+			medianIncomeY2k.set(pairs[9].trim() + COMMA_ONE);
+			context.write(state, medianIncomeY2k);
 			context.getCounter(Counters.MAP).increment(ONE);
 		}
 
@@ -56,7 +56,7 @@ public class AverageJob extends Configured implements Tool {
 	}
 
 	public static class AverageCombiner extends Reducer<Text, Text, Text, Text> {
-		private Text outputValue = new Text();
+		private Text partialSum = new Text();
 		
 		@Override
 		protected void reduce(Text key, Iterable<Text> values, Context context)
@@ -64,12 +64,12 @@ public class AverageJob extends Configured implements Tool {
 			long sum = 0;
 			int count = 0;
 			while(values.iterator().hasNext()) {
-				String [] current = values.iterator().next().toString().split(COMMA);
-				sum += Integer.parseInt(current[0]);
-				count += Integer.parseInt(current[1]);
+				String [] pair = values.iterator().next().toString().split(COMMA);
+				sum += Integer.parseInt(pair[0]);
+				count += Integer.parseInt(pair[1]);
 			}
-			outputValue.set(sum + COMMA + count);
-			context.write(key, outputValue);
+			partialSum.set(sum + COMMA + count);
+			context.write(key, partialSum);
 			context.getCounter(Counters.COMBINE).increment(ONE);
 		}		
 
@@ -81,20 +81,20 @@ public class AverageJob extends Configured implements Tool {
 	}
 
 	public static class AverageReducer extends Reducer<Text, Text, Text, DoubleWritable> {
-		DoubleWritable outputValue = new DoubleWritable();
+		DoubleWritable average = new DoubleWritable();
 		
 		@Override
-		protected void reduce(Text key, Iterable<Text> values, Context context)
+		protected void reduce(Text state, Iterable<Text> partialSums, Context context)
 				throws IOException, InterruptedException {
 			double sum = 0.0;
 			int count = 0;
-			while(values.iterator().hasNext()) {
-				String [] current = values.iterator().next().toString().split(COMMA);
-				sum += Long.parseLong(current[0]);
-				count += Integer.parseInt(current[1]);
+			while(partialSums.iterator().hasNext()) {
+				String [] pair = partialSums.iterator().next().toString().split(COMMA);
+				sum += Long.parseLong(pair[0]);
+				count += Integer.parseInt(pair[1]);
 			}
-			outputValue.set(sum/count);
-			context.write(key, outputValue);
+			average.set(sum/count);
+			context.write(state, average);
 			context.getCounter(Counters.REDUCE).increment(ONE);
 		}
 
